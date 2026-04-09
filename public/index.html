@@ -3,125 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Masters Leaderboard</title>
+  <title>Masters 2026</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a472a;
-      color: #fff;
+      background: #e8e8e8;
+      color: #222;
       font-family: 'Georgia', serif;
       min-height: 100vh;
-      padding: 20px;
+      padding: 16px;
     }
     .header {
       text-align: center;
-      padding: 30px 0;
-      border-bottom: 2px solid #f0c040;
-      margin-bottom: 30px;
+      padding: 16px 0 12px;
+      border-bottom: 2px solid #2d6a3f;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 8px;
     }
     h1 {
-      color: #f0c040;
-      font-size: 2.5em;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      color: #1a472a;
+      font-size: 1.3em;
+      white-space: nowrap;
     }
-    .subtitle { color: #90ee90; margin-top: 8px; }
-    .last-updated { color: #90ee90; font-size: 0.85em; margin-top: 5px; }
+    .last-updated { color: #666; font-size: 0.8em; margin-top: 4px; }
     .teams-container {
       max-width: 600px;
-      margin: 0 auto 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .team-card {
-      background: rgba(0,0,0,0.4);
-      border: 2px solid #f0c040;
+      margin: 0 auto 20px;
+      background: #fff;
       border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    .team-card {
+      border-bottom: 1px solid #ddd;
+    }
+    .team-card:last-child { border-bottom: none; }
     .team-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 18px 20px;
+      padding: 14px 16px;
       cursor: pointer;
       user-select: none;
     }
-    .team-header:active { background: rgba(255,255,255,0.05); }
+    .team-header:active { background: #f5f5f5; }
+    .team-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .team-pos {
+      color: #999;
+      font-size: 0.9em;
+      width: 20px;
+    }
     .team-name {
-      color: #f0c040;
-      font-size: 1.3em;
+      color: #1a472a;
+      font-size: 1.1em;
+      font-weight: bold;
     }
     .team-right {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
     }
     .team-score {
-      font-size: 1.8em;
+      font-size: 1.4em;
       font-weight: bold;
     }
     .chevron {
-      color: #f0c040;
-      font-size: 1.2em;
+      color: #999;
+      font-size: 0.9em;
       transition: transform 0.3s;
     }
     .chevron.open { transform: rotate(180deg); }
-    .score-negative { color: #90ee90; }
-    .score-positive { color: #ff6b6b; }
-    .score-even { color: #fff; }
+    .score-negative { color: #2d6a3f; }
+    .score-positive { color: #cc3333; }
+    .score-even { color: #333; }
     .players-panel {
       display: none;
-      border-top: 1px solid rgba(240,192,64,0.4);
-      padding: 10px 0;
+      background: #f9f9f9;
+      border-top: 1px solid #eee;
     }
     .players-panel.open { display: block; }
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 9px 16px 9px 46px;
+      border-bottom: 1px solid #eee;
     }
-    .player-row.counting { background: rgba(240,192,64,0.08); }
-    .player-name { font-size: 0.95em; }
-    .player-score { font-weight: bold; }
-    .player-status { font-size: 0.8em; color: #aaa; }
-    .cut { opacity: 0.5; text-decoration: line-through; }
+    .player-row:last-child { border-bottom: none; }
+    .player-row.counting { background: rgba(45,106,63,0.06); }
+    .player-name { font-size: 0.9em; color: #333; }
+    .player-score { font-weight: bold; font-size: 0.9em; }
+    .player-status { font-size: 0.8em; color: #999; }
+    .cut { opacity: 0.4; text-decoration: line-through; }
     .counting-label {
-      font-size: 0.7em;
-      color: #f0c040;
-      margin-left: 6px;
+      font-size: 0.65em;
+      color: #2d6a3f;
+      margin-left: 5px;
     }
-    .leaderboard-section {
-      max-width: 600px;
-      margin: 0 auto;
-      background: rgba(0,0,0,0.4);
-      border: 2px solid #f0c040;
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .leaderboard-title {
-      color: #f0c040;
-      font-size: 1.3em;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .leaderboard-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 5px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .pos-1 { color: #f0c040; font-weight: bold; }
-    .loading { text-align: center; padding: 50px; color: #90ee90; }
-    .error { text-align: center; padding: 50px; color: #ff6b6b; }
+    .loading { text-align: center; padding: 50px; color: #666; }
+    .error { text-align: center; padding: 50px; color: #cc3333; }
   </style>
 </head>
 <body>
 <div class="header">
-  <h1>⛳ The Masters 2026</h1>
-  <div class="subtitle">Betting Competition Leaderboard</div>
+  <img class="logo" src="https://a.espncdn.com/i/teamlogos/golf/500/pga.png" alt="Masters" onerror="this.style.display='none'"/>
+  <h1>Masters 2026 — Betting</h1>
   <div class="last-updated" id="lastUpdated">Loading...</div>
 </div>
 <div id="app">
@@ -129,30 +124,30 @@
 </div>
 <script>
 const TEAMS = {
-  'Team Woods': ['Scheffler', 'Conners', 'Im', 'Ortiz', 'Schauffele'],
-  'Team Bergsjø': ['Scheffler', 'Hovland', 'Smith', 'Garcia', 'Åberg'],
-  'Team Næsheim': ['Scheffler', 'Straka', 'Noren', 'Neergaard-Petersen', 'McIlroy'],
-  'Team Heidenreich': ['Young', 'Conners', 'Woodland', 'Reitan', 'Rose'],
-  'Team Børresen': ['Scheffler', 'Conners', 'English', 'Garcia', 'Åberg'],
-  'Team Korbu': ['Scheffler', 'Koepka', 'Im', 'Garcia', 'Åberg'],
-  'Team Norheim': ['Schauffele', 'Spieth', 'Woodland', 'Greyserman', 'Fitzpatrick'],
-  'Team Grouff': ['Rahm', 'Koepka', 'Griffin', 'Reitan', 'DeChambeau'],
-  'Team Faraasen': ['Rahm', 'Hovland', 'Woodland', 'Reitan', 'Scheffler'],
-  'Team Wroll': ['Åberg', 'Hovland', 'Im', 'Välimäki', 'Schauffele'],
-  'Team Daffinrud': ['Scheffler', 'Hovland', 'Hatton', 'Reitan', 'Åberg'],
-  'Team Sagbakken': ['Scheffler', 'Knapp', 'Clark', 'Tong Li', 'McIlroy'],
-  'Team Haukvik': ['Scheffler', 'Henley', 'Hatton', 'Garcia', 'Åberg'],
-  'Team Holter': ['McIlroy', 'Thomas', 'Hatton', 'Reitan', 'Rose'],
-  'Team Ekjord': ['McIlroy', 'Hovland', 'Penge', 'Reitan', 'Rahm'],
-  'Team Magelssen': ['Åberg', 'Hovland', 'Im', 'Ortiz', 'Rahm'],
-  'Team Øygarden': ['Scheffler', 'Conners', 'Smith', 'Garcia', 'Åberg'],
-  'Team Møller': ['Scheffler', 'Spaun', 'English', 'Reitan', 'DeChambeau'],
-  'Team Forthun': ['Rahm', 'Conners', 'Smith', 'Ortiz', 'DeChambeau'],
-  'Team Baumann': ['Åberg', 'Koepka', 'Im', 'Reitan', 'Reed'],
-  'Team Tollefsen': ['Scheffler', 'Lowry', 'Im', 'Garcia', 'Fitzpatrick'],
-  'Team Berg': ['Rahm', 'Hovland', 'Penge', 'Reitan', 'DeChambeau'],
-  'Team Sverdrup': ['McIlroy', 'Hovland', 'Bradley', 'Reitan', 'Åberg'],
-  'Team Jørgensen': ['Scheffler', 'Conners', 'Im', 'Riley', 'Åberg']
+  'Woods': ['Scheffler', 'Conners', 'Im', 'Ortiz', 'Schauffele'],
+  'Bergsjø': ['Scheffler', 'Hovland', 'Smith', 'Garcia', 'Åberg'],
+  'Næsheim': ['Scheffler', 'Straka', 'Noren', 'Neergaard-Petersen', 'McIlroy'],
+  'Heidenreich': ['Young', 'Conners', 'Woodland', 'Reitan', 'Rose'],
+  'Børresen': ['Scheffler', 'Conners', 'English', 'Garcia', 'Åberg'],
+  'Korbu': ['Scheffler', 'Koepka', 'Im', 'Garcia', 'Åberg'],
+  'Norheim': ['Schauffele', 'Spieth', 'Woodland', 'Greyserman', 'Fitzpatrick'],
+  'Grouff': ['Rahm', 'Koepka', 'Griffin', 'Reitan', 'DeChambeau'],
+  'Faraasen': ['Rahm', 'Hovland', 'Woodland', 'Reitan', 'Scheffler'],
+  'Wroll': ['Åberg', 'Hovland', 'Im', 'Välimäki', 'Schauffele'],
+  'Daffinrud': ['Scheffler', 'Hovland', 'Hatton', 'Reitan', 'Åberg'],
+  'Sagbakken': ['Scheffler', 'Knapp', 'Clark', 'Tong Li', 'McIlroy'],
+  'Haukvik': ['Scheffler', 'Henley', 'Hatton', 'Garcia', 'Åberg'],
+  'Holter': ['McIlroy', 'Thomas', 'Hatton', 'Reitan', 'Rose'],
+  'Ekjord': ['McIlroy', 'Hovland', 'Penge', 'Reitan', 'Rahm'],
+  'Magelssen': ['Åberg', 'Hovland', 'Im', 'Ortiz', 'Rahm'],
+  'Øygarden': ['Scheffler', 'Conners', 'Smith', 'Garcia', 'Åberg'],
+  'Møller': ['Scheffler', 'Spaun', 'English', 'Reitan', 'DeChambeau'],
+  'Forthun': ['Rahm', 'Conners', 'Smith', 'Ortiz', 'DeChambeau'],
+  'Baumann': ['Åberg', 'Koepka', 'Im', 'Reitan', 'Reed'],
+  'Tollefsen': ['Scheffler', 'Lowry', 'Im', 'Garcia', 'Fitzpatrick'],
+  'Berg': ['Rahm', 'Hovland', 'Penge', 'Reitan', 'DeChambeau'],
+  'Sverdrup': ['McIlroy', 'Hovland', 'Bradley', 'Reitan', 'Åberg'],
+  'Jørgensen': ['Scheffler', 'Conners', 'Im', 'Riley', 'Åberg']
 };
 const CUT_SCORE = 10;
 function formatScore(score) {
@@ -228,7 +223,10 @@ function renderApp(playerData) {
     html += `
       <div class="team-card">
         <div class="team-header" onclick="toggleTeam('${id}')">
-          <span class="team-name">${idx + 1}. ${team.teamName}</span>
+          <div class="team-left">
+            <span class="team-pos">${idx + 1}</span>
+            <span class="team-name">${team.teamName}</span>
+          </div>
           <div class="team-right">
             <span class="team-score ${getScoreClass(team.total)}">${formatScore(team.total)}</span>
             <span class="chevron" id="chevron-${id}">▼</span>
