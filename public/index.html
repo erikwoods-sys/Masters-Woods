@@ -127,7 +127,7 @@ function processPlayerData(espnData) {
       const name = comp.athlete?.displayName || '';
       const lastName = name.split(' ').slice(-1)[0];
       const status = comp.status?.type?.name || '';
-      const score = comp.score?.value ?? 0;
+      const score = parseInt(comp.score) || 0;
       const madeCut = !status.includes('CUT');
       players[lastName] = {
         fullName: name,
