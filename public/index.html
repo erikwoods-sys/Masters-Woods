@@ -20,7 +20,7 @@
       margin-bottom: 20px;
     }
     .logo {
-      width: 160px;
+      width: 120px;
       object-fit: contain;
       margin-bottom: 8px;
     }
@@ -38,9 +38,7 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .team-card {
-      border-bottom: 1px solid #ddd;
-    }
+    .team-card { border-bottom: 1px solid #ddd; }
     .team-card:last-child { border-bottom: none; }
     .team-card.leader {
       background: linear-gradient(135deg, #fffbe6 0%, #fff9d6 100%);
@@ -50,7 +48,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
+      padding: 12px 16px;
       cursor: pointer;
       user-select: none;
     }
@@ -62,46 +60,35 @@
     }
     .team-pos {
       color: #999;
-      font-size: 0.9em;
+      font-size: 0.85em;
       width: 22px;
       font-weight: bold;
     }
-    .team-pos.first {
-      color: #b8860b;
-      font-size: 1.1em;
-    }
+    .team-pos.first { color: #b8860b; font-size: 1em; }
     .team-name {
       color: #1a472a;
-      font-size: 1.1em;
+      font-size: 1em;
       font-weight: bold;
     }
-    .team-name.first {
-      color: #b8860b;
-    }
-    .trophy {
-      font-size: 1em;
-      margin-left: 4px;
-    }
+    .team-name.first { color: #b8860b; }
     .team-right {
       display: flex;
       align-items: center;
       gap: 12px;
     }
     .team-score {
-      font-size: 1.4em;
+      font-size: 1.2em;
       font-weight: bold;
     }
-    .team-score.first-score {
-      font-size: 1.6em;
-    }
+    .team-score.first-score { font-size: 1.4em; }
     .chevron {
       color: #999;
       font-size: 0.9em;
       transition: transform 0.3s;
     }
     .chevron.open { transform: rotate(180deg); }
-    .score-negative { color: #2d6a3f; }
-    .score-positive { color: #cc3333; }
+    .score-negative { color: #cc3333; }
+    .score-positive { color: #2d6a3f; }
     .score-even { color: #333; }
     .players-panel {
       display: none;
@@ -122,11 +109,7 @@
     .player-score { font-weight: bold; font-size: 0.9em; }
     .player-status { font-size: 0.8em; color: #999; }
     .cut { opacity: 0.4; text-decoration: line-through; }
-    .counting-label {
-      font-size: 0.65em;
-      color: #2d6a3f;
-      margin-left: 5px;
-    }
+    .counting-label { font-size: 0.65em; color: #2d6a3f; margin-left: 5px; }
     .loading { text-align: center; padding: 50px; color: #666; }
     .error { text-align: center; padding: 50px; color: #cc3333; }
   </style>
@@ -161,7 +144,7 @@ const TEAMS = {
   'Øygarden': ['Scheffler', 'Conners', 'Smith', 'Garcia', 'Åberg'],
   'Møller': ['Scheffler', 'Spaun', 'English', 'Reitan', 'DeChambeau'],
   'Forthun': ['Rahm', 'Conners', 'Smith', 'Ortiz', 'DeChambeau'],
-  'Baumann': ['Åberg', 'Koepka', 'Im', 'Reitan', 'Reed'],
+  'Baumann': ['Åberg', 'Koepka', 'Im','Reitan', 'Reed'],
   'Tollefsen': ['Scheffler', 'Lowry', 'Im', 'Garcia', 'Fitzpatrick'],
   'Berg': ['Rahm', 'Hovland', 'Penge', 'Reitan', 'DeChambeau'],
   'Sverdrup': ['McIlroy', 'Hovland', 'Bradley', 'Reitan', 'Åberg'],
@@ -244,7 +227,7 @@ function renderApp(playerData) {
         <div class="team-header" onclick="toggleTeam('${id}')">
           <div class="team-left">
             <span class="team-pos ${isFirst ? 'first' : ''}">${isFirst ? '🏆' : idx + 1}</span>
-            <span class="team-name ${isFirst ? 'first' : ''}">${team.teamName}${isFirst ? '' : ''}</span>
+            <span class="team-name ${isFirst ? 'first' : ''}">${team.teamName}</span>
           </div>
           <div class="team-right">
             <span class="team-score ${getScoreClass(team.total)} ${isFirst ? 'first-score' : ''}">${formatScore(team.total)}</span>
