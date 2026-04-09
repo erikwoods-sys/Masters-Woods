@@ -20,14 +20,13 @@
       margin-bottom: 20px;
     }
     .logo {
-      width: 80px;
-      height: 80px;
+      width: 160px;
       object-fit: contain;
       margin-bottom: 8px;
     }
     h1 {
       color: #1a472a;
-      font-size: 1.3em;
+      font-size: 1.2em;
       white-space: nowrap;
     }
     .last-updated { color: #666; font-size: 0.8em; margin-top: 4px; }
@@ -43,6 +42,10 @@
       border-bottom: 1px solid #ddd;
     }
     .team-card:last-child { border-bottom: none; }
+    .team-card.leader {
+      background: linear-gradient(135deg, #fffbe6 0%, #fff9d6 100%);
+      border-left: 4px solid #f0c040;
+    }
     .team-header {
       display: flex;
       justify-content: space-between;
@@ -51,7 +54,7 @@
       cursor: pointer;
       user-select: none;
     }
-    .team-header:active { background: #f5f5f5; }
+    .team-header:active { background: rgba(0,0,0,0.03); }
     .team-left {
       display: flex;
       align-items: center;
@@ -60,12 +63,24 @@
     .team-pos {
       color: #999;
       font-size: 0.9em;
-      width: 20px;
+      width: 22px;
+      font-weight: bold;
+    }
+    .team-pos.first {
+      color: #b8860b;
+      font-size: 1.1em;
     }
     .team-name {
       color: #1a472a;
       font-size: 1.1em;
       font-weight: bold;
+    }
+    .team-name.first {
+      color: #b8860b;
+    }
+    .trophy {
+      font-size: 1em;
+      margin-left: 4px;
     }
     .team-right {
       display: flex;
@@ -75,6 +90,9 @@
     .team-score {
       font-size: 1.4em;
       font-weight: bold;
+    }
+    .team-score.first-score {
+      font-size: 1.6em;
     }
     .chevron {
       color: #999;
@@ -115,7 +133,7 @@
 </head>
 <body>
 <div class="header">
-  <img class="logo" src="https://a.espncdn.com/i/teamlogos/golf/500/pga.png" alt="Masters" onerror="this.style.display='none'"/>
+  <img class="logo" src="/IMG_3970.png" alt="Masters" onerror="this.style.display='none'"/>
   <h1>Masters 2026 — Betting</h1>
   <div class="last-updated" id="lastUpdated">Loading...</div>
 </div>
@@ -220,15 +238,16 @@ function renderApp(playerData) {
   teamResults.forEach((team, idx) => {
     const countingNames = team.counting.map(p => p.name);
     const id = 'team' + idx;
+    const isFirst = idx === 0;
     html += `
-      <div class="team-card">
+      <div class="team-card ${isFirst ? 'leader' : ''}">
         <div class="team-header" onclick="toggleTeam('${id}')">
           <div class="team-left">
-            <span class="team-pos">${idx + 1}</span>
-            <span class="team-name">${team.teamName}</span>
+            <span class="team-pos ${isFirst ? 'first' : ''}">${isFirst ? '🏆' : idx + 1}</span>
+            <span class="team-name ${isFirst ? 'first' : ''}">${team.teamName}${isFirst ? '' : ''}</span>
           </div>
           <div class="team-right">
-            <span class="team-score ${getScoreClass(team.total)}">${formatScore(team.total)}</span>
+            <span class="team-score ${getScoreClass(team.total)} ${isFirst ? 'first-score' : ''}">${formatScore(team.total)}</span>
             <span class="chevron" id="chevron-${id}">▼</span>
           </div>
         </div>
