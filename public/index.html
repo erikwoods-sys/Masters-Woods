@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masters Leaderboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a472a;
+      color: #fff;
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 2px solid #f0c040;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #f0c040;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .subtitle { color: #90ee90; margin-top: 8px; }
+    .last-updated { color: #90ee90; font-size: 0.85em; margin-top: 5px; }
+    .teams-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      max-width: 900px;
+      margin: 0 auto 30px;
+    }
+    .team-card {
+      background: rgba(0,0,0,0.4);
+      border: 2px solid #f0c040;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .team-name {
+      color: #f0c040;
+      font-size: 1.4em;
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0c040;
+    }
+    .team-score {
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .score-negative { color: #90ee90; }
+    .score-positive { color: #ff6b6b; }
+    .score-even { color: #fff; }
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 5px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .player-row.counting { background: rgba(240,192,64,0.1); }
+    .player-name { font-size: 0.95em; }
+    .player-score { font-weight: bold; }
+    .player-status { font-size: 0.8em; color: #aaa; }
+    .cut { opacity: 0.5; text-decoration: line-through; }
+    .leaderboard-section {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid #f0c040;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .leaderboard-title {
+      color: #f0c040;
+      font-size: 1.3em;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .leaderboard-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 5px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .pos-1 { color: #f0c040; font-weight: bold; }
+    .loading { text-align: center; padding: 50px; color: #90ee90; }
+    .error { text-align: center; padding: 50px; color: #ff6b6b; }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>⛳ The Masters 2025</h1>
+  <div class="subtitle">Betting Competition Leaderboard</div>
+  <div class="last-updated" id="lastUpdated">Loading...</div>
+</div>
+<div id="app">
+  <div class="loading">Loading scores...</div>
+</div>
+<script>
+const TEAMS = {
+  'Team Woods': ['Scheffler', 'Conners', 'Im', 'Ortiz', 'Schauffele'],
+  'Team Bergsjø': ['Scheffler', 'Hovland', 'Smith', 'Garcia', 'Åberg']
+};
+const CUT_SCORE = 10;
+function formatScore(score) {
+  if (score === 999) return 'WD';
+  if (score === 0) return 'E';
+  if (score > 0) return '+' + score;
+  return score.toString();
+}
+function getScoreClass(score) {
+  if (score < 0) return 'score-negative';
+  if (score > 0) return 'score-positive';
+  return 'score-even';
+}
+function processPlayerData(espnData) {
+  const players = {};
+  try {
+    const competitions = espnData.events?.[0]?.competitions?.[0]?.competitors || [];
+    competitions.forEach(comp => {
+      const name = comp.athlete?.displayName || '';
+      const lastName = name.split(' ').slice(-1)[0];
+      const status = comp.status?.type?.name || '';
+      const score = comp.score?.value ?? 0;
+      const madeCut = !status.includes('CUT');
+      players[lastName] = {
+        fullName: name,
+        score: madeCut ? score : CUT_SCORE * 2,
+        madeCut,
+        withdrawn: status.includes('WD'),
+        position: comp.status?.position?.displayName || '-'
+      };
+      if (players[lastName].withdrawn) players[lastName].score = 999;
+    });
+  } catch(e) {
+    console.error('Error processing player data:', e);
+  }
+  return players;
+}
+function calculateTeamScore(teamPlayers, playerData) {
+  const scores = teamPlayers.map(name => {
+    const player = playerData[name];
+    if (!player) return { name, score: 0, status: 'Loading' };
+    return {
+      name: player.fullName || name,
+      score: player.score,
+      madeCut: player.madeCut,
+      withdrawn: player.withdrawn,
+      position: player.position
+    };
+  });
+  const sorted = [...scores].sort((a, b) => a.score - b.score);
+  const counting = sorted.slice(0, 4);
+  const total = counting.reduce((sum, p) => sum + p.score, 0);
+  return { scores, counting, total };
+}
+function renderApp(playerData) {
+  const teamResults = Object.entries(TEAMS).map(([teamName, players]) => {
+    const result = calculateTeamScore(players, playerData);
+    return { teamName, ...result };
+  });
+  teamResults.sort((a, b) => a.total - b.total);
+  let html = '<div class="teams-container">';
+  teamResults.forEach(team => {
+    const countingNames = team.counting.map(p => p.name);
+    html += `
+      <div class="team-card">
+        <div class="team-name">${team.teamName}</div>
+        <div class="team-score ${getScoreClass(team.total)}">${formatScore(team.total)}</div>
+        ${team.scores.map(p => `
+          <div class="player-row ${countingNames.includes(p.name) ? 'counting' : ''} ${!p.madeCut ? 'cut' : ''}">
+            <span class="player-name">${p.name}</span>
+            <span class="player-status">${p.position}</span>
+            <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+  html += '</div>';
+  html += `
+    <div class="leaderboard-section">
+      <div class="leaderboard-title">🏆 Competition Standing</div>
+      ${teamResults.map((team, i) => `
+        <div class="leaderboard-row ${i === 0 ? 'pos-1' : ''}">
+          <span>${i + 1}. ${team.teamName}</span>
+          <span>${formatScore(team.total)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('app').innerHTML = html;
+  document.getElementById('lastUpdated').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString();
+}
+async function fetchScores() {
+  try {
+    const response = await fetch('/api/scores');
+    const data = await response.json();
+    const playerData = processPlayerData(data);
+    renderApp(playerData);
+  } catch(error) {
+    document.getElementById('app').innerHTML =
+      '<div class="error">Failed to load scores. Retrying...</div>';
+    console.error(error);
+  }
+}
+fetchScores();
+setInterval(fetchScores, 120000);
+</script>
+</body>
+</html>
