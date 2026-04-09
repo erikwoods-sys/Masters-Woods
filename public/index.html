@@ -27,49 +27,74 @@
     .subtitle { color: #90ee90; margin-top: 8px; }
     .last-updated { color: #90ee90; font-size: 0.85em; margin-top: 5px; }
     .teams-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 25px;
-      max-width: 900px;
+      max-width: 600px;
       margin: 0 auto 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
     .team-card {
       background: rgba(0,0,0,0.4);
       border: 2px solid #f0c040;
       border-radius: 12px;
-      padding: 20px;
+      overflow: hidden;
     }
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .team-header:active { background: rgba(255,255,255,0.05); }
     .team-name {
       color: #f0c040;
-      font-size: 1.4em;
-      text-align: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #f0c040;
+      font-size: 1.3em;
+    }
+    .team-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
     .team-score {
-      text-align: center;
-      font-size: 2em;
+      font-size: 1.8em;
       font-weight: bold;
-      margin-bottom: 15px;
     }
+    .chevron {
+      color: #f0c040;
+      font-size: 1.2em;
+      transition: transform 0.3s;
+    }
+    .chevron.open { transform: rotate(180deg); }
     .score-negative { color: #90ee90; }
     .score-positive { color: #ff6b6b; }
     .score-even { color: #fff; }
+    .players-panel {
+      display: none;
+      border-top: 1px solid rgba(240,192,64,0.4);
+      padding: 10px 0;
+    }
+    .players-panel.open { display: block; }
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 5px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .player-row.counting { background: rgba(240,192,64,0.1); }
+    .player-row.counting { background: rgba(240,192,64,0.08); }
     .player-name { font-size: 0.95em; }
     .player-score { font-weight: bold; }
     .player-status { font-size: 0.8em; color: #aaa; }
     .cut { opacity: 0.5; text-decoration: line-through; }
+    .counting-label {
+      font-size: 0.7em;
+      color: #f0c040;
+      margin-left: 6px;
+    }
     .leaderboard-section {
-      max-width: 900px;
+      max-width: 600px;
       margin: 0 auto;
       background: rgba(0,0,0,0.4);
       border: 2px solid #f0c040;
@@ -95,7 +120,7 @@
 </head>
 <body>
 <div class="header">
-  <h1>⛳ The Masters 2025</h1>
+  <h1>⛳ The Masters 2026</h1>
   <div class="subtitle">Betting Competition Leaderboard</div>
   <div class="last-updated" id="lastUpdated">Loading...</div>
 </div>
@@ -146,13 +171,14 @@ function processPlayerData(espnData) {
 function calculateTeamScore(teamPlayers, playerData) {
   const scores = teamPlayers.map(name => {
     const player = playerData[name];
-    if (!player) return { name, score: 0, status: 'Loading' };
+    if (!player) return { name, score: 0, found: false };
     return {
       name: player.fullName || name,
       score: player.score,
       madeCut: player.madeCut,
       withdrawn: player.withdrawn,
-      position: player.position
+      position: player.position,
+      found: true
     };
   });
   const sorted = [...scores].sort((a, b) => a.score - b.score);
@@ -160,41 +186,46 @@ function calculateTeamScore(teamPlayers, playerData) {
   const total = counting.reduce((sum, p) => sum + p.score, 0);
   return { scores, counting, total };
 }
+function toggleTeam(id) {
+  const panel = document.getElementById('panel-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  panel.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
 function renderApp(playerData) {
   const teamResults = Object.entries(TEAMS).map(([teamName, players]) => {
     const result = calculateTeamScore(players, playerData);
     return { teamName, ...result };
   });
   teamResults.sort((a, b) => a.total - b.total);
+
   let html = '<div class="teams-container">';
-  teamResults.forEach(team => {
+  teamResults.forEach((team, idx) => {
     const countingNames = team.counting.map(p => p.name);
+    const id = 'team' + idx;
     html += `
       <div class="team-card">
-        <div class="team-name">${team.teamName}</div>
-        <div class="team-score ${getScoreClass(team.total)}">${formatScore(team.total)}</div>
-        ${team.scores.map(p => `
-          <div class="player-row ${countingNames.includes(p.name) ? 'counting' : ''} ${!p.madeCut ? 'cut' : ''}">
-            <span class="player-name">${p.name}</span>
-            <span class="player-status">${p.position}</span>
-            <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
+        <div class="team-header" onclick="toggleTeam('${id}')">
+          <span class="team-name">${idx + 1}. ${team.teamName}</span>
+          <div class="team-right">
+            <span class="team-score ${getScoreClass(team.total)}">${formatScore(team.total)}</span>
+            <span class="chevron" id="chevron-${id}">▼</span>
           </div>
-        `).join('')}
+        </div>
+        <div class="players-panel" id="panel-${id}">
+          ${team.scores.map(p => `
+            <div class="player-row ${countingNames.includes(p.name) ? 'counting' : ''} ${p.madeCut === false ? 'cut' : ''}">
+              <span class="player-name">${p.name}${countingNames.includes(p.name) ? '<span class="counting-label">★</span>' : ''}</span>
+              <span class="player-status">${p.position || '-'}</span>
+              <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   });
   html += '</div>';
-  html += `
-    <div class="leaderboard-section">
-      <div class="leaderboard-title">🏆 Competition Standing</div>
-      ${teamResults.map((team, i) => `
-        <div class="leaderboard-row ${i === 0 ? 'pos-1' : ''}">
-          <span>${i + 1}. ${team.teamName}</span>
-          <span>${formatScore(team.total)}</span>
-        </div>
-      `).join('')}
-    </div>
-  `;
+
   document.getElementById('app').innerHTML = html;
   document.getElementById('lastUpdated').textContent =
     'Last updated: ' + new Date().toLocaleTimeString();
