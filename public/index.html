@@ -120,7 +120,7 @@
     .score-even { color: #333; }
     .players-panel {
       display: none;
-      background: #f2f2f2;
+      background: #fff;
       border-top: 1px solid #eee;
     }
     .players-panel.open { display: block; }
@@ -128,33 +128,34 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 9px 16px 9px 46px;
-      border-bottom: 1px solid #e8e8e8;
+      padding: 10px 16px 10px 20px;
+      border-bottom: 1px solid #f0f0f0;
     }
     .player-row:last-child { border-bottom: none; }
-    .player-row.counting .player-name,
+    .player-row.counting {
+      background: #fff;
+    }
+    .player-row.counting .player-name {
+      color: #1a1a1a;
+      font-weight: bold;
+    }
     .player-row.counting .player-status {
-      color: #222;
+      color: #666;
     }
     .player-row.not-counting {
-      opacity: 0.45;
-      filter: blur(0.4px);
+      opacity: 0.55;
+      filter: blur(0.3px);
     }
-    .player-name { font-size: 0.9em; color: #888; }
+    .player-row.not-counting .player-name {
+      color: #999;
+    }
+    .player-row.not-counting .player-score {
+      color: #bbb !important;
+    }
+    .player-name { font-size: 0.9em; }
     .player-score { font-weight: bold; font-size: 0.9em; }
     .player-status { font-size: 0.8em; color: #aaa; }
-    .player-row.counting .player-score { color: #fff; }
-    .player-row.counting {
-      background: rgba(30,80,40,0.82);
-      border-radius: 6px;
-      margin: 3px 10px;
-      padding: 9px 12px;
-    }
-    .player-row.counting .score-negative { color: #6ddb8a; }
-    .player-row.counting .score-positive { color: #ff8a8a; }
-    .player-row.counting .score-even { color: #fff; }
     .cut { opacity: 0.4; text-decoration: line-through; }
-    .counting-label { font-size: 0.65em; color: #90ee90; margin-left: 5px; }
     .loading { text-align: center; padding: 50px; color: #666; }
     .error { text-align: center; padding: 50px; color: #cc3333; }
   </style>
