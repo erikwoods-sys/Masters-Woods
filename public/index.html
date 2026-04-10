@@ -20,16 +20,37 @@
       margin-bottom: 20px;
     }
     .logo {
-      width: 120px;
+      width: 90px;
       object-fit: contain;
       margin-bottom: 8px;
     }
     h1 {
       color: #1a472a;
-      font-size: 1.2em;
+      font-size: 1.1em;
       white-space: nowrap;
     }
-    .last-updated { color: #666; font-size: 0.8em; margin-top: 4px; }
+    .presented {
+      color: #666;
+      font-size: 0.8em;
+      margin-top: 3px;
+      font-style: italic;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 8px;
+      font-size: 0.8em;
+      color: #444;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .stat-label { color: #999; font-size: 0.85em; }
+    .stat-value { font-weight: bold; color: #1a472a; }
+    .last-updated { color: #666; font-size: 0.75em; margin-top: 6px; }
     .teams-container {
       max-width: 600px;
       margin: 0 auto 20px;
@@ -64,7 +85,7 @@
       width: 22px;
       font-weight: bold;
     }
-    .team-pos.first { color: #b8860b; font-size: 1em; }
+    .team-pos.first { color: #b8860b; font-size: 0.95em; }
     .team-name {
       color: #1a472a;
       font-size: 1em;
@@ -117,7 +138,18 @@
 <body>
 <div class="header">
   <img class="logo" src="/IMG_3970.png" alt="Masters" onerror="this.style.display='none'"/>
-  <h1>Masters 2026 — Betting</h1>
+  <h1>Masters 2026 — Betting — SLAM/NRP</h1>
+  <div class="presented">Presented by Woods</div>
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-label">Teams</span>
+      <span class="stat-value">24</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Prize Pool</span>
+      <span class="stat-value">6 000 kr</span>
+    </div>
+  </div>
   <div class="last-updated" id="lastUpdated">Loading...</div>
 </div>
 <div id="app">
@@ -226,7 +258,7 @@ function renderApp(playerData) {
       <div class="team-card ${isFirst ? 'leader' : ''}">
         <div class="team-header" onclick="toggleTeam('${id}')">
           <div class="team-left">
-            <span class="team-pos ${isFirst ? 'first' : ''}">${isFirst ? '🏆' : idx + 1}</span>
+            <span class="team-pos ${isFirst ? 'first' : ''}">${idx + 1}</span>
             <span class="team-name ${isFirst ? 'first' : ''}">${team.teamName}</span>
           </div>
           <div class="team-right">
