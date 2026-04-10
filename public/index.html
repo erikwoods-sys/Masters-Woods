@@ -120,8 +120,9 @@
     .score-even { color: #333; }
     .players-panel {
       display: none;
-      background: #fff;
-      border-top: 1px solid #eee;
+      background: #f5f7f5;
+      border-top: 2px solid #2d6a3f;
+      border-bottom: 2px solid #2d6a3f;
     }
     .players-panel.open { display: block; }
     .player-row {
@@ -129,7 +130,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 10px 16px 10px 20px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid #e8e8e8;
     }
     .player-row:last-child { border-bottom: none; }
     .player-row.counting {
@@ -145,6 +146,7 @@
     .player-row.not-counting {
       opacity: 0.55;
       filter: blur(0.3px);
+      background: #f5f7f5;
     }
     .player-row.not-counting .player-name {
       color: #999;
