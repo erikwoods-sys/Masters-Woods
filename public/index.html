@@ -153,15 +153,14 @@
       opacity: 0.5;
       filter: blur(0.3px);
     }
-    .player-row.not-counting .player-name { color: #666; }
     .player-name { font-size: 0.9em; flex: 1; }
     .mc-badge {
       font-size: 0.7em;
-      color: #999;
-      background: rgba(0,0,0,0.08);
+      color: #fff;
+      background: #999;
       border-radius: 3px;
       padding: 1px 4px;
-      margin-left: 5px;
+      margin-right: 6px;
       vertical-align: middle;
     }
     .round-cell {
@@ -173,6 +172,10 @@
       border-radius: 4px;
       padding: 2px 0;
       margin-right: 4px;
+    }
+    .round-cell.penalty {
+      color: #cc3333;
+      background: rgba(204,51,51,0.08);
     }
     .player-score {
       width: 40px;
@@ -232,18 +235,45 @@ const TEAMS = {
   'Sverdrup': ['McIlroy', 'Hovland', 'Bradley', 'Reitan', 'Åberg'],
   'Jørgensen': ['Scheffler', 'Conners', 'Im', 'Riley', 'Åberg']
 };
-const CUT_SCORE = 10;
+
+const CUT_SCORE_ROUNDS = 2;
+const ROUND_START_HOUR_CET = 15;
+const ROUND_START_MIN_CET = 30;
+
+function getRoundStartCET(dateStr) {
+  // Returns a Date object for 15:30 CET on the given date string (YYYY-MM-DD)
+  return new Date(`${dateStr}T${String(ROUND_START_HOUR_CET).padStart(2,'0')}:${String(ROUND_START_MIN_CET).padStart(2,'0')}:00+01:00`);
+}
+
+// R3 = Saturday April 12, R4 = Sunday April 13
+const R3_START = getRoundStartCET('2026-04-11');
+const R4_START = getRoundStartCET('2026-04-12');
+
+function getMCPenaltyRounds(cutScore) {
+  const now = new Date();
+  const half = Math.round(cutScore / 2);
+  const r1 = cutScore - half; // in case odd number
+  const rounds = [];
+  // R3
+  rounds.push(now >= R3_START ? '+' + half : '-');
+  // R4
+  rounds.push(now >= R4_START ? '+' + half : '-');
+  return { rounds, half };
+}
+
 function formatScore(score) {
   if (score === 999) return 'WD';
   if (score === 0) return 'E';
   if (score > 0) return '+' + score;
   return score.toString();
 }
+
 function getScoreClass(score) {
   if (score < 0) return 'score-negative';
   if (score > 0) return 'score-positive';
   return 'score-even';
 }
+
 function processPlayerData(espnData) {
   const players = {};
   try {
@@ -254,22 +284,49 @@ function processPlayerData(espnData) {
       const status = comp.status?.type?.name || '';
       const score = parseInt(comp.score) || 0;
       const madeCut = status !== 'STATUS_MISSED_CUT';
-      const rounds = comp.linescores?.map(r => r.displayValue || '-') || [];
+      const withdrawn = status === 'STATUS_WITHDRAWN';
+      const espnRounds = comp.linescores?.map(r => r.displayValue || '-') || [];
+
+      let rounds = [...espnRounds];
+      let totalScore = score;
+
+      if (!madeCut && !withdrawn) {
+        // Cut score is sum of R1+R2
+        const r1 = parseFloat(espnRounds[0]) || 0;
+        const r2 = parseFloat(espnRounds[1]) || 0;
+        const cutTotal = r1 + r2;
+        const half = Math.ceil(Math.abs(cutTotal) / 2) * Math.sign(cutTotal);
+        const now = new Date();
+        const r3val = now >= R3_START ? half : null;
+        const r4val = now >= R4_START ? half : null;
+        rounds = [
+          espnRounds[0] || '-',
+          espnRounds[1] || '-',
+          r3val !== null ? (r3val >= 0 ? '+' + r3val : r3val.toString()) : '-',
+          r4val !== null ? (r4val >= 0 ? '+' + r4val : r4val.toString()) : '-'
+        ];
+        // Total score for sorting
+        totalScore = cutTotal
+          + (r3val !== null ? r3val : 0)
+          + (r4val !== null ? r4val : 0);
+      }
+
       players[lastName] = {
         fullName: name,
-        score: madeCut ? score : CUT_SCORE * 2,
+        score: withdrawn ? 999 : totalScore,
         madeCut,
-        withdrawn: status === 'STATUS_WITHDRAWN',
+        withdrawn,
         position: comp.status?.position?.displayName || '-',
-        rounds
+        rounds,
+        isMC: !madeCut && !withdrawn
       };
-      if (players[lastName].withdrawn) players[lastName].score = 999;
     });
   } catch(e) {
     console.error('Error processing player data:', e);
   }
   return players;
 }
+
 function calculateTeamScore(teamPlayers, playerData) {
   const scores = teamPlayers.map(name => {
     const player = playerData[name];
@@ -279,6 +336,7 @@ function calculateTeamScore(teamPlayers, playerData) {
       score: player.score,
       madeCut: player.madeCut,
       withdrawn: player.withdrawn,
+      isMC: player.isMC,
       position: player.position,
       rounds: player.rounds,
       found: true
@@ -289,12 +347,14 @@ function calculateTeamScore(teamPlayers, playerData) {
   const total = counting.reduce((sum, p) => sum + p.score, 0);
   return { scores, counting, total };
 }
+
 function toggleTeam(id) {
   const panel = document.getElementById('panel-' + id);
   const chevron = document.getElementById('chevron-' + id);
   panel.classList.toggle('open');
   chevron.classList.toggle('open');
 }
+
 function renderApp(playerData) {
   const teamResults = Object.entries(TEAMS).map(([teamName, players]) => {
     const result = calculateTeamScore(players, playerData);
@@ -307,7 +367,7 @@ function renderApp(playerData) {
     const countingNames = team.counting.map(p => p.name);
     const id = 'team' + idx;
     const isFirst = idx === 0;
-    const maxR = Math.max(...team.scores.map(p => p.rounds?.length || 0), 1);
+    const maxR = Math.max(...team.scores.map(p => p.rounds?.length || 0), 2);
     const roundHeaders = Array.from({length: maxR}, (_, i) =>
       `<span class="rh-r">R${i+1}</span>`).join('');
 
@@ -331,13 +391,16 @@ function renderApp(playerData) {
           </div>
           ${team.scores.map(p => {
             const isCounting = countingNames.includes(p.name);
-            const roundCells = Array.from({length: maxR}, (_, i) =>
-              `<span class="round-cell">${p.rounds?.[i] || '-'}</span>`).join('');
-            const mcBadge = !p.madeCut ? '<span class="mc-badge">MC</span>' : '';
+            const roundCells = Array.from({length: maxR}, (_, i) => {
+              const val = p.rounds?.[i] || '-';
+              const isPenalty = p.isMC && i >= 2 && val !== '-';
+              return `<span class="round-cell ${isPenalty ? 'penalty' : ''}">${val}</span>`;
+            }).join('');
+            const mcBadge = p.isMC ? '<span class="mc-badge">MC</span>' : '';
             const wdBadge = p.withdrawn ? '<span class="mc-badge">WD</span>' : '';
             return `
-            <div class="player-row ${isCounting ? 'counting' : 'not-counting'} ${!p.madeCut ? 'cut' : ''}">
-              <span class="player-name">${p.name}${mcBadge}${wdBadge}</span>
+            <div class="player-row ${isCounting ? 'counting' : 'not-counting'}">
+              <span class="player-name">${mcBadge}${wdBadge}${p.name}</span>
               ${roundCells}
               <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
             </div>
@@ -352,6 +415,7 @@ function renderApp(playerData) {
   document.getElementById('lastUpdated').textContent =
     'Last updated: ' + new Date().toLocaleTimeString();
 }
+
 async function fetchScores() {
   try {
     const response = await fetch('/api/scores');
