@@ -155,6 +155,15 @@
     }
     .player-row.not-counting .player-name { color: #666; }
     .player-name { font-size: 0.9em; flex: 1; }
+    .mc-badge {
+      font-size: 0.7em;
+      color: #999;
+      background: rgba(0,0,0,0.08);
+      border-radius: 3px;
+      padding: 1px 4px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
     .round-cell {
       width: 36px;
       text-align: center;
@@ -298,7 +307,6 @@ function renderApp(playerData) {
     const countingNames = team.counting.map(p => p.name);
     const id = 'team' + idx;
     const isFirst = idx === 0;
-
     const maxR = Math.max(...team.scores.map(p => p.rounds?.length || 0), 1);
     const roundHeaders = Array.from({length: maxR}, (_, i) =>
       `<span class="rh-r">R${i+1}</span>`).join('');
@@ -325,9 +333,10 @@ function renderApp(playerData) {
             const isCounting = countingNames.includes(p.name);
             const roundCells = Array.from({length: maxR}, (_, i) =>
               `<span class="round-cell">${p.rounds?.[i] || '-'}</span>`).join('');
+            const mcBadge = p.madeCut === false ? '<span class="mc-badge">MC</span>' : '';
             return `
             <div class="player-row ${isCounting ? 'counting' : 'not-counting'} ${p.madeCut === false ? 'cut' : ''}">
-              <span class="player-name">${p.name}</span>
+              <span class="player-name">${p.name}${mcBadge}</span>
               ${roundCells}
               <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
             </div>
