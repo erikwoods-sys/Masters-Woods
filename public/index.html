@@ -294,9 +294,11 @@ function processPlayerData(espnData) {
           r3val !== null ? formatHalf(r3val) : '-',
           r4val !== null ? formatHalf(r4val) : '-'
         ];
-        totalScore = r1r2total
+        totalScore = Math.round(
+          r1r2total
           + (r3val !== null ? r3val : 0)
-          + (r4val !== null ? r4val : 0);
+          + (r4val !== null ? r4val : 0)
+        );
       }
 
       players[lastName] = {
