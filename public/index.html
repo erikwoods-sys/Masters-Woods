@@ -162,7 +162,6 @@
       padding: 1px 4px;
       margin-right: 6px;
       vertical-align: middle;
-      font-style: normal;
     }
     .wd-badge {
       font-size: 0.65em;
@@ -245,7 +244,7 @@ const TEAMS = {
   'Jørgensen': ['Scheffler', 'Conners', 'Im', 'Riley', 'Åberg']
 };
 
-const CUT_LINE = 5; // +5 or worse = missed cut
+const CUT_LINE = 5;
 const R3_START = new Date('2026-04-12T15:30:00+02:00');
 const R4_START = new Date('2026-04-13T15:30:00+02:00');
 
@@ -270,17 +269,17 @@ function processPlayerData(espnData) {
       const status = comp.status?.type?.name || '';
       const withdrawn = status === 'STATUS_WITHDRAWN';
       const espnRounds = comp.linescores?.map(r => r.displayValue || '-') || [];
-      const score = parseInt(comp.score) || 0;
 
-      // Check if player has only 2 rounds and score >= CUT_LINE
-      const hasOnlyTwoRounds = espnRounds.length <= 2;
-      const missedCut = !withdrawn && hasOnlyTwoRounds && score >= CUT_LINE;
+      const r1 = parseInt(espnRounds[0]) || 0;
+      const r2 = parseInt(espnRounds[1]) || 0;
+      const r1r2total = r1 + r2;
+      const missedCut = !withdrawn && r1r2total >= CUT_LINE;
 
       let rounds = [...espnRounds];
-      let totalScore = score;
+      let totalScore = parseInt(comp.score) || 0;
 
       if (missedCut) {
-        const half = Math.ceil(score / 2);
+        const half = Math.ceil(r1r2total / 2);
         const now = new Date();
         const r3val = now >= R3_START ? half : null;
         const r4val = now >= R4_START ? half : null;
@@ -290,7 +289,7 @@ function processPlayerData(espnData) {
           r3val !== null ? (r3val > 0 ? '+' + r3val : r3val.toString()) : '-',
           r4val !== null ? (r4val > 0 ? '+' + r4val : r4val.toString()) : '-'
         ];
-        totalScore = score
+        totalScore = r1r2total
           + (r3val !== null ? r3val : 0)
           + (r4val !== null ? r4val : 0);
       }
