@@ -135,8 +135,8 @@
       border-bottom: 1px solid #ccdacc;
     }
     .round-header .rh-name { flex: 1; }
-    .round-header .rh-r { width: 36px; text-align: center; }
-    .round-header .rh-tot { width: 40px; text-align: right; }
+    .round-header .rh-r { width: 40px; text-align: center; }
+    .round-header .rh-tot { width: 44px; text-align: right; }
     .player-row {
       display: flex;
       align-items: center;
@@ -173,7 +173,7 @@
       vertical-align: middle;
     }
     .round-cell {
-      width: 36px;
+      width: 40px;
       text-align: center;
       font-size: 0.78em;
       color: #555;
@@ -187,7 +187,7 @@
       background: rgba(204,51,51,0.08);
     }
     .player-score {
-      width: 40px;
+      width: 44px;
       text-align: right;
       font-weight: bold;
       font-size: 0.9em;
@@ -254,6 +254,11 @@ function formatScore(score) {
   if (score > 0) return '+' + score;
   return score.toString();
 }
+function formatHalf(val) {
+  if (val === 0) return 'E';
+  if (val > 0) return '+' + val;
+  return val.toString();
+}
 function getScoreClass(score) {
   if (score < 0) return 'score-negative';
   if (score > 0) return 'score-positive';
@@ -279,15 +284,15 @@ function processPlayerData(espnData) {
       let totalScore = parseInt(comp.score) || 0;
 
       if (missedCut) {
-        const half = Math.ceil(r1r2total / 2);
+        const half = r1r2total / 2;
         const now = new Date();
         const r3val = now >= R3_START ? half : null;
         const r4val = now >= R4_START ? half : null;
         rounds = [
           espnRounds[0] || '-',
           espnRounds[1] || '-',
-          r3val !== null ? (r3val > 0 ? '+' + r3val : r3val.toString()) : '-',
-          r4val !== null ? (r4val > 0 ? '+' + r4val : r4val.toString()) : '-'
+          r3val !== null ? formatHalf(r3val) : '-',
+          r4val !== null ? formatHalf(r4val) : '-'
         ];
         totalScore = r1r2total
           + (r3val !== null ? r3val : 0)
