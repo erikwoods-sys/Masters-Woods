@@ -253,13 +253,13 @@ function processPlayerData(espnData) {
       const lastName = name.split(' ').slice(-1)[0];
       const status = comp.status?.type?.name || '';
       const score = parseInt(comp.score) || 0;
-      const madeCut = !status.includes('CUT');
+      const madeCut = status !== 'STATUS_MISSED_CUT';
       const rounds = comp.linescores?.map(r => r.displayValue || '-') || [];
       players[lastName] = {
         fullName: name,
         score: madeCut ? score : CUT_SCORE * 2,
         madeCut,
-        withdrawn: status.includes('WD'),
+        withdrawn: status === 'STATUS_WITHDRAWN',
         position: comp.status?.position?.displayName || '-',
         rounds
       };
@@ -333,10 +333,11 @@ function renderApp(playerData) {
             const isCounting = countingNames.includes(p.name);
             const roundCells = Array.from({length: maxR}, (_, i) =>
               `<span class="round-cell">${p.rounds?.[i] || '-'}</span>`).join('');
-            const mcBadge = p.madeCut === false ? '<span class="mc-badge">MC</span>' : '';
+            const mcBadge = !p.madeCut ? '<span class="mc-badge">MC</span>' : '';
+            const wdBadge = p.withdrawn ? '<span class="mc-badge">WD</span>' : '';
             return `
-            <div class="player-row ${isCounting ? 'counting' : 'not-counting'} ${p.madeCut === false ? 'cut' : ''}">
-              <span class="player-name">${p.name}${mcBadge}</span>
+            <div class="player-row ${isCounting ? 'counting' : 'not-counting'} ${!p.madeCut ? 'cut' : ''}">
+              <span class="player-name">${p.name}${mcBadge}${wdBadge}</span>
               ${roundCells}
               <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
             </div>
